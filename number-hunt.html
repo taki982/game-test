@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<title>Number Hunt</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+
+:root{
+  --bg:#FFF8F0;--bg2:#FFF0DC;--card:#fff;--text:#1A1200;--dim:#8A6A30;
+  --accent:#FF9500;--accent2:#FFB340;--accent3:#E07800;
+  --gold:#FFD93D;--red:#FF3D3D;--green:#34C759;
+  --border:#F0D8B0;--shadow:rgba(255,149,0,.15);
+}
+
+/* ── 테마 ── */
+body.theme-night{
+  --bg:#0D0820;--bg2:#150D30;--card:#1A1040;--text:#E8E0FF;--dim:#8880BB;
+  --accent:#9D4EDD;--accent2:#C77DFF;--accent3:#7B2FBE;
+  --gold:#FFD93D;--red:#FF5470;--green:#44FF88;
+  --border:#2A1A60;--shadow:rgba(157,78,221,.2);
+}
+body.theme-fire{
+  --bg:#1A0800;--bg2:#2A1000;--card:#200C00;--text:#FFE8D0;--dim:#AA6040;
+  --accent:#FF4400;--accent2:#FF7700;--accent3:#CC2200;
+  --gold:#FFD93D;--red:#FF2020;--green:#88FF44;
+  --border:#3A1800;--shadow:rgba(255,68,0,.2);
+}
+body.theme-cyber{
+  --bg:#000818;--bg2:#001020;--card:#001830;--text:#D0F4FF;--dim:#4488AA;
+  --accent:#00B4FF;--accent2:#44D4FF;--accent3:#007ACC;
+  --gold:#FFD93D;--red:#FF3D7F;--green:#00FF88;
+  --border:#003050;--shadow:rgba(0,180,255,.2);
+}
+
+body{background:var(--bg);font-family:-apple-system,'Helvetica Neue',sans-serif;height:100dvh;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:background .4s;}
+
+.screen{display:none;width:100%;height:100dvh;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.screen.active{display:flex;}
+
+.btn{width:100%;max-width:320px;padding:15px;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .1s,opacity .1s;}
+.btn:active{transform:scale(.97);}
+.btn-main{background:linear-gradient(135deg,var(--accent2),var(--accent3));color:#fff;box-shadow:0 6px 20px var(--shadow);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--dim);margin-top:8px;}
+
+/* ══ LOBBY ══ */
+#screen-lobby{gap:0;justify-content:flex-start;padding-top:48px;}
+.lobby-header{display:flex;flex-direction:column;align-items:center;margin-bottom:24px;}
+.lobby-title{font-size:28px;font-weight:900;color:var(--text);letter-spacing:-1px;}
+.lobby-sub{font-size:13px;color:var(--dim);margin-top:4px;}
+
+/* 레벨 카드 */
+.level-card{
+  width:100%;max-width:340px;background:var(--card);border-radius:20px;
+  border:1.5px solid var(--border);padding:18px 20px;margin-bottom:16px;
+  box-shadow:0 4px 16px var(--shadow);
+}
+.level-row{display:flex;align-items:center;justify-content:space-between;}
+.level-badge{
+  display:flex;align-items:center;gap:8px;
+}
+.level-num{font-size:26px;font-weight:900;color:var(--accent);}
+.level-name{font-size:13px;color:var(--dim);}
+.level-best{font-size:13px;color:var(--gold);font-weight:700;}
+.xp-bar-bg{width:100%;height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:10px;}
+.xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s;}
+
+/* 일일 미션 */
+.mission-wrap{width:100%;max-width:340px;margin-bottom:16px;}
+.mission-title{font-size:11px;font-weight:800;color:var(--dim);letter-spacing:2px;margin-bottom:8px;}
+.mission-card{
+  background:var(--card);border-radius:14px;border:1.5px solid var(--border);
+  padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;
+}
+.mission-icon{font-size:22px;}
+.mission-info{flex:1;}
+.mission-name{font-size:13px;font-weight:700;color:var(--text);}
+.mission-prog{font-size:11px;color:var(--dim);margin-top:2px;}
+.mission-reward{font-size:12px;font-weight:700;color:var(--gold);}
+.mission-done{opacity:.5;text-decoration:line-through;}
+
+/* 하트 */
+.hearts-row{display:flex;gap:5px;margin-bottom:20px;}
+.heart{font-size:22px;}
+.heart.empty{filter:grayscale(1);opacity:.3;}
+
+/* ══ COUNTDOWN ══ */
+#screen-countdown .count-num{font-size:130px;font-weight:900;color:var(--accent);line-height:1;animation:popIn .35s cubic-bezier(.175,.885,.32,1.275);text-shadow:0 0 40px var(--shadow);}
+#screen-countdown .count-go{font-size:80px;font-weight:900;color:var(--accent);line-height:1;animation:popIn .35s cubic-bezier(.175,.885,.32,1.275);}
+#screen-countdown .count-lbl{font-size:15px;color:var(--dim);margin-top:10px;letter-spacing:3px;font-weight:700;}
+@keyframes popIn{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* ══ GAME ══ */
+#screen-game{position:relative;overflow:hidden;background:var(--bg);justify-content:flex-start;padding:0;}
+#particle-canvas{position:absolute;inset:0;pointer-events:none;width:100%;height:100%;z-index:20;}
+.flash-overlay{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .06s;z-index:15;}
+
+/* 헤더 */
+.game-header{width:100%;padding:14px 18px 8px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10;}
+.next-wrap{display:flex;flex-direction:column;align-items:center;}
+.next-lbl{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:1.5px;}
+.next-num{font-size:52px;font-weight:900;color:var(--accent);line-height:1;letter-spacing:-2px;transition:transform .1s;}
+.next-num.pop{transform:scale(1.2);}
+.timer-wrap2{display:flex;flex-direction:column;align-items:flex-end;}
+.timer-val{font-size:30px;font-weight:900;color:var(--text);letter-spacing:-1px;font-variant-numeric:tabular-nums;}
+.timer-val.urgent{color:var(--red);animation:urgPulse .35s ease-in-out infinite;}
+@keyframes urgPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.timer-lbl{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:1px;}
+
+/* 레벨 + 진행 */
+.game-meta{width:100%;padding:0 18px 6px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10;}
+.game-level-badge{font-size:11px;font-weight:800;color:var(--accent);background:var(--border);border-radius:10px;padding:3px 10px;}
+.game-progress-wrap{flex:1;margin:0 10px;}
+.game-progress-bg{width:100%;height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.game-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .2s;}
+.game-progress-txt{font-size:10px;color:var(--dim);font-weight:700;text-align:right;margin-top:2px;}
+
+/* 그리드 */
+.grid-wrap{flex:1;width:100%;display:flex;align-items:center;justify-content:center;padding:6px 12px 12px;position:relative;z-index:10;}
+.grid{display:grid;gap:5px;width:100%;max-width:400px;}
+.cell{
+  aspect-ratio:1;background:var(--card);border-radius:10px;
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;color:var(--text);cursor:pointer;
+  box-shadow:0 2px 8px var(--shadow);
+  transition:transform .08s,background .1s,border-color .1s,opacity .2s;
+  position:relative;overflow:hidden;
+}
+.cell:active{transform:scale(.88);}
+.cell.correct{background:linear-gradient(135deg,var(--accent2),var(--accent3));border-color:var(--accent);color:#fff;box-shadow:0 4px 16px var(--shadow);animation:correctPop .22s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes correctPop{0%{transform:scale(.85);}60%{transform:scale(1.1);}100%{transform:scale(1);}}
+.cell.wrong{background:#FFE8E8;border-color:var(--red);animation:wrongShake .3s ease-in-out;}
+@keyframes wrongShake{0%,100%{transform:translate(0,0);}20%{transform:translate(-5px,0);}40%{transform:translate(5px,0);}60%{transform:translate(-3px,0);}80%{transform:translate(3px,0);}}
+.cell.done{background:var(--bg2);border-color:var(--border);color:var(--dim);opacity:.45;pointer-events:none;}
+.cell.hidden-num::before{content:'?';position:absolute;font-size:inherit;font-weight:900;color:var(--accent);pointer-events:none;}
+.cell.hidden-num span{opacity:0;}
+.cell.moving{animation:cellMove .3s ease;}
+@keyframes cellMove{0%{transform:scale(1.1);}100%{transform:scale(1);}}
+.cell::before{content:'';position:absolute;top:6%;left:15%;width:55%;height:30%;background:radial-gradient(ellipse,rgba(255,255,255,.4) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+
+/* ══ CLEAR ══ */
+#screen-clear{background:var(--bg);gap:0;}
+.clear-trophy{font-size:72px;margin-bottom:8px;animation:bounceIn .5s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes bounceIn{from{transform:scale(0);}60%{transform:scale(1.2);}to{transform:scale(1);}}
+.clear-title{font-size:28px;font-weight:900;color:var(--accent);margin-bottom:4px;}
+.clear-time{font-size:56px;font-weight:900;color:var(--text);letter-spacing:-2px;line-height:1;}
+.clear-unit{font-size:15px;color:var(--dim);margin-bottom:6px;}
+.clear-badge{background:linear-gradient(135deg,var(--bg2),var(--border));border:1.5px solid var(--accent2);border-radius:20px;padding:6px 18px;margin-bottom:16px;font-size:13px;font-weight:700;color:var(--accent);}
+.stat-row{display:flex;gap:8px;margin-bottom:18px;width:100%;max-width:320px;}
+.stat-card{flex:1;background:var(--card);border-radius:12px;padding:12px 8px;text-align:center;border:1.5px solid var(--border);}
+.stat-card .sv{font-size:20px;font-weight:800;color:var(--text);}
+.stat-card .sl{font-size:10px;color:var(--dim);margin-top:2px;}
+.new-record{background:linear-gradient(135deg,var(--bg2),var(--border));border:1.5px solid var(--gold);border-radius:12px;padding:10px 20px;margin-bottom:14px;font-size:13px;font-weight:700;color:var(--gold);animation:glowPulse 1.5s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,217,61,.3);}50%{box-shadow:0 0 20px 4px rgba(255,217,61,.15);}}
+.xp-gained{font-size:13px;color:var(--green);font-weight:700;margin-bottom:14px;}
+.btn-row{display:flex;flex-direction:column;gap:8px;width:100%;max-width:320px;}
+
+/* 화면 흔들림 */
+@keyframes screenShake{0%,100%{transform:translate(0,0);}15%{transform:translate(-5px,-2px);}30%{transform:translate(5px,2px);}45%{transform:translate(-3px,1px);}60%{transform:translate(3px,-1px);}75%{transform:translate(-2px,0);}}
+.shaking{animation:screenShake .35s ease-in-out;}
+</style>
+</head>
+<body>
+
+<!-- ══ LOBBY ══ -->
+<div class="screen active" id="screen-lobby">
+  <div class="lobby-header">
+    <div style="font-size:13px;font-weight:800;color:var(--accent);background:var(--border);border-radius:12px;padding:4px 14px;margin-bottom:10px;">Number Hunt</div>
+    <div class="lobby-title">숫자를 찾아라!</div>
+    <div class="lobby-sub">난이도를 선택하고 게임을 시작하세요</div>
+  </div>
+
+  <!-- 난이도 선택 카드 -->
+  <div id="level-select-list" style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;overflow-y:auto;max-height:55vh;padding:2px 0;"></div>
+
+  <!-- 일일 미션 -->
+  <div class="mission-wrap" style="width:100%;max-width:360px;">
+    <div class="mission-title">📋 오늘의 미션</div>
+    <div id="mission-list"></div>
+  </div>
+
+  <div class="hearts-row" id="hearts-display"></div>
+  <button class="btn btn-main" id="btn-start">게임 시작</button>
+  <div style="display:flex;gap:8px;width:100%;max-width:320px;margin-top:8px;">
+    <button class="btn btn-outline" id="btn-ranking" style="flex:1;margin-top:0">🏆 랭킹</button>
+    <button class="btn btn-outline" id="btn-mute" style="width:52px;margin-top:0;padding:0;font-size:20px;">🔊</button>
+  </div>
+</div>
+
+<!-- ══ COUNTDOWN ══ -->
+<div class="screen" id="screen-countdown">
+  <div id="count-display" class="count-num">3</div>
+  <div class="count-lbl" id="count-lbl">READY</div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen" id="screen-game">
+  <canvas id="particle-canvas"></canvas>
+  <div class="flash-overlay" id="flash-overlay"></div>
+
+  <div class="game-header">
+    <div class="next-wrap">
+      <div class="next-lbl">NEXT</div>
+      <div class="next-num" id="next-num">1</div>
+    </div>
+    <div class="timer-wrap2">
+      <div class="timer-val" id="timer-val">0.00</div>
+      <div class="timer-lbl">SECONDS</div>
+    </div>
+  </div>
+
+  <div class="game-meta">
+    <div class="game-level-badge" id="game-lv-badge">Lv.1</div>
+    <div class="game-progress-wrap">
+      <div class="game-progress-bg"><div class="game-progress-fill" id="game-prog-fill" style="width:0%"></div></div>
+      <div class="game-progress-txt" id="game-prog-txt">0 / 25</div>
+    </div>
+  </div>
+
+  <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+</div>
+
+<!-- ══ CLEAR ══ -->
+<div class="screen" id="screen-clear">
+  <div class="clear-trophy" id="clear-trophy">🏆</div>
+  <div class="clear-title">CLEAR!</div>
+  <div class="clear-time" id="clear-time">0.00</div>
+  <div class="clear-unit">초</div>
+  <div class="clear-badge" id="clear-badge">⭐ 스타 3개</div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="sv" id="stat-best">--</div><div class="sl">최고기록</div></div>
+    <div class="stat-card"><div class="sv" id="stat-rank">--</div><div class="sl">내 랭킹</div></div>
+    <div class="stat-card"><div class="sv" id="stat-wrong">0</div><div class="sl">틀린 횟수</div></div>
+  </div>
+  <div class="new-record" id="new-record" style="display:none">🎉 신기록!</div>
+  <div class="xp-gained" id="xp-gained">+0 XP 획득</div>
+  <div class="btn-row">
+    <button class="btn btn-main" id="btn-next-lv">다음 레벨 →</button>
+    <button class="btn btn-main" id="btn-retry">다시 도전</button>
+    <button class="btn btn-outline" id="btn-share">친구에게 공유 💬</button>
+    <button class="btn btn-outline" id="btn-home">홈으로</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  레벨 시스템 — 5단계 유저 선택형
+// ════════════════════════════════════════
+const LEVELS = [
+  {
+    lv: 1, name: '쉬움', emoji: '🌱',
+    desc: '10개 숫자, 규칙 없음',
+    cols: 4, rows: 3, count: 10,
+    timeLimit: 0, hide: 0, move: 0,
+    theme: '', stars: [5, 8, 12],
+    color: '#34C759',
+  },
+  {
+    lv: 2, name: '보통', emoji: '🌿',
+    desc: '15개 숫자, 규칙 없음',
+    cols: 5, rows: 3, count: 15,
+    timeLimit: 0, hide: 0, move: 0,
+    theme: '', stars: [8, 12, 18],
+    color: '#FF9500',
+  },
+  {
+    lv: 3, name: '어려움', emoji: '🔥',
+    desc: '20개 숫자, 일부 숨김',
+    cols: 5, rows: 4, count: 20,
+    timeLimit: 0, hide: 0.2, move: 0,
+    theme: 'night', stars: [12, 18, 28],
+    color: '#9D4EDD',
+  },
+  {
+    lv: 4, name: '매우 어려움', emoji: '💀',
+    desc: '25개 숫자, 숨김 + 이동',
+    cols: 5, rows: 5, count: 25,
+    timeLimit: 0, hide: 0.2, move: 4000,
+    theme: 'fire', stars: [16, 24, 36],
+    color: '#FF4400',
+  },
+  {
+    lv: 5, name: '극한', emoji: '⚡',
+    desc: '30개 숫자, 숨김+이동+시간제한',
+    cols: 6, rows: 5, count: 30,
+    timeLimit: 45, hide: 0.25, move: 3000,
+    theme: 'cyber', stars: [20, 30, 45],
+    color: '#00B4FF',
+  },
+];
+
+function getLevelConfig(lv) {
+  return LEVELS[Math.min(lv - 1, LEVELS.length - 1)];
+}
+
+// ════════════════════════════════════════
+//  상태
+// ════════════════════════════════════════
+let selectedLevel = parseInt(localStorage.getItem('nh_selected_lv') || '1'); // 유저가 선택한 단계
+let hearts        = parseInt(localStorage.getItem('nh_hearts') || '5');
+let weeklyRankPct = null;
+
+let nextNum = 1, wrongCount = 0, startTime = 0, elapsed = 0;
+let timerRAF = null, gameActive = false, numbers = [];
+let moveTimer = null;
+let cfg = null;
+
+// 일일 미션
+const TODAY = new Date().toDateString();
+let missions = JSON.parse(localStorage.getItem('nh_missions') || 'null');
+if (!missions || missions.date !== TODAY) {
+  missions = {
+    date: TODAY,
+    list: [
+      { id:'play3',   name:'오늘 3판 플레이',    icon:'🎮', goal:3,  prog:0, reward:50,  done:false },
+      { id:'perfect', name:'틀리지 않고 클리어',  icon:'✨', goal:1,  prog:0, reward:100, done:false },
+      { id:'fast',    name:'15초 이내 클리어',    icon:'⚡', goal:1,  prog:0, reward:80,  done:false },
+    ]
+  };
+  localStorage.setItem('nh_missions', JSON.stringify(missions));
+}
+
+function saveMissions() { localStorage.setItem('nh_missions', JSON.stringify(missions)); }
+
+// 베스트 기록
+function getBest(lv) { return parseFloat(localStorage.getItem(`nh_best_${lv}`) || '0'); }
+function setBest(lv, t) { localStorage.setItem(`nh_best_${lv}`, t.toFixed(3)); }
+
+// ════════════════════════════════════════
+//  Web Audio 사운드 엔진
+// ════════════════════════════════════════
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, vol=0.3, delay=0) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration);
+  } catch(e) {}
+}
+
+const SFX = {
+  correct() {
+    playTone(880, 'sine', .12, .25);
+    playTone(1320, 'sine', .1, .15, .06);
+  },
+  wrong() {
+    playTone(180, 'sawtooth', .18, .2);
+    playTone(150, 'sawtooth', .15, .15, .06);
+  },
+  combo(n) {
+    const notes = [523,659,784,1047,1319];
+    const idx = Math.min(n-2, notes.length-1);
+    playTone(notes[idx], 'sine', .15, .3);
+  },
+  clear() {
+    // 팡파레
+    const melody = [[523,.1,0],[659,.1,.12],[784,.1,.24],[1047,.3,.36]];
+    melody.forEach(([f,d,dl]) => playTone(f,'sine',d,.35,dl));
+    playTone(1319, 'sine', .5, .3, .5);
+  },
+  levelUp() {
+    [523,659,784,1047,1319,1568].forEach((f,i)=>playTone(f,'sine',.15,.3,i*.08));
+  },
+  tick() { playTone(440,'sine',.05,.1); },
+  hidden() { playTone(660,'triangle',.08,.15); },
+};
+
+// ════════════════════════════════════════
+//  BGM 엔진 — 테마별 멜로디 + 베이스 + 드럼
+// ════════════════════════════════════════
+
+// 음계 주파수 (Hz)
+const NOTE = {
+  C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
+  C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
+  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880,
+  R:0 // 쉼표
+};
+
+/*
+  테마별 BGM 데이터:
+  melody: [음표, 박자길이(beat단위)] 배열
+  bass:   [음표, 박자길이] 배열
+  bpm:    템포
+  swing:  스윙감 (0~0.5)
+*/
+const BGM_DATA = {
+
+  // 오렌지 테마 — 밝고 경쾌한 8비트 퍼즐 BGM
+  '': {
+    bpm: 128,
+    swing: 0,
+    melody: [
+      [NOTE.E5,.5],[NOTE.E5,.5],[NOTE.R,.5],[NOTE.E5,.5],
+      [NOTE.R,.5],[NOTE.C5,.5],[NOTE.E5,1],
+      [NOTE.G5,1],[NOTE.R,1],
+      [NOTE.G4,1],[NOTE.R,1],
+      [NOTE.C5,.75],[NOTE.R,.25],[NOTE.G4,.75],[NOTE.R,.25],
+      [NOTE.E4,.75],[NOTE.R,.25],[NOTE.A4,.5],[NOTE.B4,.5],
+      [NOTE.A4,.25],[NOTE.G4,.5],[NOTE.E5,.75],[NOTE.G5,.75],[NOTE.A5,.5],
+      [NOTE.F5,.5],[NOTE.G5,.5],[NOTE.R,.5],[NOTE.E5,1],
+      [NOTE.C5,.5],[NOTE.D5,.5],[NOTE.B4,.75],[NOTE.R,.25],
+    ],
+    bass: [
+      [NOTE.C3,1],[NOTE.C3,1],[NOTE.G3,1],[NOTE.G3,1],
+      [NOTE.A3,1],[NOTE.A3,1],[NOTE.F3,1],[NOTE.F3,1],
+    ],
+    melodyVol: 0.12,
+    bassVol: 0.06,
+    melodyType: 'square',
+    bassType: 'triangle',
+  },
+
+  // 나이트 테마 — 신비롭고 느린 분위기
+  'night': {
+    bpm: 90,
+    swing: 0.1,
+    melody: [
+      [NOTE.A4,1],[NOTE.G4,1],[NOTE.F4,1],[NOTE.E4,1],
+      [NOTE.D4,1],[NOTE.E4,.5],[NOTE.F4,.5],[NOTE.G4,2],
+      [NOTE.A4,1],[NOTE.A4,.5],[NOTE.B4,.5],[NOTE.C5,1],[NOTE.B4,1],
+      [NOTE.A4,1],[NOTE.G4,1],[NOTE.F4,2],[NOTE.R,2],
+      [NOTE.C5,1],[NOTE.B4,.5],[NOTE.A4,.5],[NOTE.G4,1],[NOTE.F4,1],
+      [NOTE.E4,1],[NOTE.F4,.5],[NOTE.G4,.5],[NOTE.A4,2],
+      [NOTE.G4,1],[NOTE.F4,1],[NOTE.E4,1],[NOTE.D4,1],
+      [NOTE.A3,1],[NOTE.R,1],[NOTE.A4,2],
+    ],
+    bass: [
+      [NOTE.A3,2],[NOTE.E3,2],[NOTE.F3,2],[NOTE.C3,2],
+      [NOTE.D3,2],[NOTE.A3,2],[NOTE.E3,2],[NOTE.E3,2],
+    ],
+    melodyVol: 0.10,
+    bassVol: 0.05,
+    melodyType: 'sine',
+    bassType: 'sine',
+  },
+
+  // 파이어 테마 — 빠르고 긴박한 액션 BGM
+  'fire': {
+    bpm: 150,
+    swing: 0,
+    melody: [
+      [NOTE.E5,.25],[NOTE.R,.25],[NOTE.E5,.25],[NOTE.R,.25],[NOTE.E5,.25],[NOTE.R,.25],[NOTE.C5,.25],[NOTE.E5,.25],
+      [NOTE.G5,.5],[NOTE.R,.5],[NOTE.G4,.5],[NOTE.R,.5],
+      [NOTE.C5,.75],[NOTE.R,.25],[NOTE.G4,.75],[NOTE.R,.25],
+      [NOTE.E4,.75],[NOTE.R,.25],[NOTE.A4,.5],[NOTE.B4,.5],
+      [NOTE.F5,.25],[NOTE.F5,.25],[NOTE.R,.25],[NOTE.F5,.25],[NOTE.E5,.5],[NOTE.R,.5],
+      [NOTE.D5,.25],[NOTE.E5,.25],[NOTE.R,.25],[NOTE.E5,.25],[NOTE.D5,.5],[NOTE.C5,.5],
+      [NOTE.G4,.25],[NOTE.A4,.5],[NOTE.G4,.25],[NOTE.E4,.5],[NOTE.R,.5],
+      [NOTE.C5,.5],[NOTE.G4,.5],[NOTE.E4,1],
+    ],
+    bass: [
+      [NOTE.C3,.5],[NOTE.C3,.5],[NOTE.G3,.5],[NOTE.G3,.5],
+      [NOTE.A3,.5],[NOTE.A3,.5],[NOTE.E3,.5],[NOTE.E3,.5],
+      [NOTE.F3,.5],[NOTE.F3,.5],[NOTE.C3,.5],[NOTE.G3,.5],
+      [NOTE.C3,.5],[NOTE.B3,.5],[NOTE.A3,.5],[NOTE.G3,.5],
+    ],
+    melodyVol: 0.13,
+    bassVol: 0.07,
+    melodyType: 'sawtooth',
+    bassType: 'square',
+  },
+
+  // 사이버 테마 — 전자음 미래적 BGM
+  'cyber': {
+    bpm: 135,
+    swing: 0.05,
+    melody: [
+      [NOTE.A4,.5],[NOTE.R,.25],[NOTE.A4,.25],[NOTE.C5,.5],[NOTE.R,.5],
+      [NOTE.A4,.5],[NOTE.G4,.5],[NOTE.A4,1],
+      [NOTE.F4,.5],[NOTE.R,.25],[NOTE.F4,.25],[NOTE.A4,.5],[NOTE.R,.5],
+      [NOTE.G4,.5],[NOTE.F4,.5],[NOTE.E4,1],
+      [NOTE.C5,.5],[NOTE.R,.25],[NOTE.C5,.25],[NOTE.E5,.5],[NOTE.R,.5],
+      [NOTE.D5,.5],[NOTE.C5,.5],[NOTE.B4,.5],[NOTE.A4,.5],
+      [NOTE.G4,.25],[NOTE.A4,.25],[NOTE.G4,.25],[NOTE.F4,.25],[NOTE.E4,.5],[NOTE.R,.5],
+      [NOTE.A4,1],[NOTE.R,.5],[NOTE.A4,.25],[NOTE.A4,.25],
+    ],
+    bass: [
+      [NOTE.A3,1],[NOTE.R,.5],[NOTE.A3,.5],
+      [NOTE.F3,1],[NOTE.R,.5],[NOTE.F3,.5],
+      [NOTE.C3,1],[NOTE.R,.5],[NOTE.C3,.5],
+      [NOTE.E3,1],[NOTE.R,.5],[NOTE.E3,.5],
+    ],
+    melodyVol: 0.11,
+    bassVol: 0.06,
+    melodyType: 'square',
+    bassType: 'sawtooth',
+  },
+};
+
+let bgmState = null; // { loopId, ctx }
+
+function startBGM(theme) {
+  stopBGM();
+  const data = BGM_DATA[theme] || BGM_DATA[''];
+
+  try {
+    const ctx = getAudioCtx();
+    const beat = 60 / data.bpm;
+
+    // 마스터 게인 (볼륨 컨트롤)
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0, ctx.currentTime);
+    masterGain.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.5); // 페이드인
+    masterGain.connect(ctx.destination);
+
+    // 멜로디 큐 위치
+    let melodyPos = 0;
+    let bassPos   = 0;
+    let scheduleAhead = 0.1; // 얼마나 미리 스케줄링할지 (초)
+    let nextMelodyTime = ctx.currentTime + 0.2;
+    let nextBassTime   = ctx.currentTime + 0.2;
+    let melodyIdx = 0;
+    let bassIdx   = 0;
+
+    function scheduleNote(freq, duration, startTime, type, vol) {
+      if (freq === 0) return; // 쉼표
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, startTime);
+      // 음표 엔벨로프 (어택/릴리즈)
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(vol, startTime + 0.01);
+      gain.gain.setValueAtTime(vol, startTime + duration * beat * 0.75);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration * beat * 0.98);
+      osc.start(startTime);
+      osc.stop(startTime + duration * beat);
+    }
+
+    function scheduleDrum(time) {
+      // 킥드럼
+      const kick = ctx.createOscillator();
+      const kgain = ctx.createGain();
+      kick.connect(kgain); kgain.connect(masterGain);
+      kick.type = 'sine';
+      kick.frequency.setValueAtTime(150, time);
+      kick.frequency.exponentialRampToValueAtTime(0.001, time + 0.15);
+      kgain.gain.setValueAtTime(0.15, time);
+      kgain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+      kick.start(time); kick.stop(time + 0.15);
+
+      // 하이햇 (빠른 테마만)
+      if (data.bpm >= 128) {
+        const hat = ctx.createOscillator();
+        const hgain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        hat.connect(filter); filter.connect(hgain); hgain.connect(masterGain);
+        filter.type = 'highpass'; filter.frequency.value = 8000;
+        hat.type = 'square';
+        hat.frequency.value = 14000;
+        hgain.gain.setValueAtTime(0.03, time + beat * 0.5);
+        hgain.gain.exponentialRampToValueAtTime(0.001, time + beat * 0.5 + 0.04);
+        hat.start(time + beat * 0.5); hat.stop(time + beat * 0.5 + 0.05);
+      }
+    }
+
+    // 스케줄러: lookahead 방식으로 미리 음표 생성
+    function scheduler() {
+      const now = ctx.currentTime;
+
+      // 멜로디 스케줄링
+      while (nextMelodyTime < now + scheduleAhead) {
+        const [freq, dur] = data.melody[melodyIdx % data.melody.length];
+        scheduleNote(freq, dur, nextMelodyTime, data.melodyType, data.melodyVol);
+        nextMelodyTime += dur * beat;
+        melodyIdx++;
+      }
+
+      // 베이스 스케줄링
+      while (nextBassTime < now + scheduleAhead) {
+        const [freq, dur] = data.bass[bassIdx % data.bass.length];
+        scheduleNote(freq, dur, nextBassTime, data.bassType, data.bassVol);
+        bassIdx++;
+        nextBassTime += dur * beat;
+      }
+
+      // 드럼 스케줄링 (매 박자)
+      const drumBeat = beat;
+      let nextDrum = Math.ceil((now - 0.2) / drumBeat) * drumBeat;
+      while (nextDrum < now + scheduleAhead) {
+        if (nextDrum >= now) scheduleDrum(nextDrum);
+        nextDrum += drumBeat;
+      }
+    }
+
+    // 25ms마다 lookahead 스케줄링
+    const loopId = setInterval(scheduler, 25);
+    scheduler(); // 즉시 1회 실행
+
+    bgmState = { loopId, masterGain, ctx };
+
+  } catch(e) { console.warn('[BGM]', e); }
+}
+
+function stopBGM() {
+  if (!bgmState) return;
+  try {
+    clearInterval(bgmState.loopId);
+    // 페이드아웃 후 종료
+    bgmState.masterGain.gain.linearRampToValueAtTime(0, bgmState.ctx.currentTime + 0.5);
+  } catch(e) {}
+  bgmState = null;
+}
+
+function setBGMVolume(vol) {
+  if (!bgmState) return;
+  try { bgmState.masterGain.gain.setValueAtTime(vol, bgmState.ctx.currentTime); }
+  catch(e) {}
+}
+
+// ════════════════════════════════════════
+//  파티클
+// ════════════════════════════════════════
+const pCanvas = document.getElementById('particle-canvas');
+const pCtx    = pCanvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() { pCanvas.width=window.innerWidth; pCanvas.height=window.innerHeight; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+function spawnParticles(x, y, colors, count=12) {
+  for(let i=0;i<count;i++){
+    const angle=(Math.PI*2/count)*i+(Math.random()-.5)*.8;
+    const spd=4+Math.random()*6;
+    particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-3,alpha:1,decay:.04+Math.random()*.03,size:4+Math.random()*6,color:colors[Math.floor(Math.random()*colors.length)],shape:Math.random()>.4?'circle':'star'});
+  }
+}
+function spawnRing(x,y,color){particles.push({type:'ring',x,y,r:0,alpha:.8,color,speed:6});}
+function spawnBurst(x,y){ // 클리어 대폭발
+  for(let i=0;i<40;i++){
+    const angle=Math.random()*Math.PI*2;
+    const spd=3+Math.random()*10;
+    particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-5,alpha:1,decay:.02+Math.random()*.03,size:4+Math.random()*10,color:['#FF9500','#FFD93D','#FF6D00','#fff','#FFB340'][Math.floor(Math.random()*5)],shape:'star'});
+  }
+  spawnRing(x,y,'#FFD93D'); spawnRing(x,y,'#FF9500');
+}
+
+function drawStar(ctx,x,y,r){
+  ctx.beginPath();
+  for(let i=0;i<5;i++){const a=(i*4*Math.PI)/5-Math.PI/2;const b=((i*4+2)*Math.PI)/5-Math.PI/2;if(i===0)ctx.moveTo(x+r*Math.cos(a),y+r*Math.sin(a));else ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));ctx.lineTo(x+(r/2)*Math.cos(b),y+(r/2)*Math.sin(b));}ctx.closePath();
+}
+function animParticles(){
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  particles=particles.filter(p=>p.alpha>.02);
+  for(const p of particles){
+    if(p.type==='ring'){p.r+=p.speed;p.alpha-=.04;pCtx.save();pCtx.globalAlpha=p.alpha;pCtx.strokeStyle=p.color;pCtx.lineWidth=3;pCtx.beginPath();pCtx.arc(p.x,p.y,p.r,0,Math.PI*2);pCtx.stroke();pCtx.restore();continue;}
+    p.x+=p.vx;p.y+=p.vy;p.vy+=.38;p.alpha-=p.decay;
+    pCtx.save();pCtx.globalAlpha=Math.max(0,p.alpha);pCtx.fillStyle=p.color;
+    if(p.shape==='star'){drawStar(pCtx,p.x,p.y,p.size);pCtx.fill();}
+    else{pCtx.beginPath();pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);pCtx.fill();}
+    pCtx.restore();
+  }
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// ════════════════════════════════════════
+//  화면 전환
+// ════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function applyTheme(theme) {
+  document.body.className = theme ? `theme-${theme}` : '';
+}
+
+// ════════════════════════════════════════
+//  로비 UI
+// ════════════════════════════════════════
+function renderLobby() {
+  applyTheme(getLevelConfig(selectedLevel).theme);
+
+  // ─── 레벨 선택 카드 5개 ───
+  const list = document.getElementById('level-select-list');
+  list.innerHTML = '';
+  LEVELS.forEach(lv => {
+    const best = getBest(lv.lv);
+    const isSelected = lv.lv === selectedLevel;
+    const tags = [];
+    if (lv.hide > 0)      tags.push('숨김');
+    if (lv.move > 0)      tags.push('이동');
+    if (lv.timeLimit > 0) tags.push(`${lv.timeLimit}초 제한`);
+
+    const card = document.createElement('div');
+    card.style.cssText = `
+      background:${isSelected ? 'var(--card)' : 'var(--bg2)'};
+      border:2px solid ${isSelected ? lv.color : 'var(--border)'};
+      border-radius:16px; padding:14px 16px;
+      display:flex; align-items:center; gap:12px;
+      cursor:pointer; transition:all .15s;
+      box-shadow:${isSelected ? `0 4px 16px ${lv.color}33` : 'none'};
+    `;
+    card.innerHTML = `
+      <div style="width:44px;height:44px;border-radius:12px;background:${lv.color}22;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${lv.emoji}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+          <span style="font-size:15px;font-weight:800;color:var(--text);">단계 ${lv.lv}</span>
+          <span style="font-size:12px;font-weight:700;color:${lv.color};">${lv.name}</span>
+          ${isSelected ? `<span style="font-size:10px;font-weight:800;color:#fff;background:${lv.color};border-radius:8px;padding:1px 7px;margin-left:2px;">선택됨</span>` : ''}
+        </div>
+        <div style="font-size:12px;color:var(--dim);margin-bottom:4px;">${lv.desc}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          ${tags.map(t=>`<span style="font-size:10px;font-weight:700;color:${lv.color};background:${lv.color}18;border-radius:6px;padding:1px 6px;">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);">${best > 0 ? best.toFixed(2)+'s' : '--'}</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:2px;">최고기록</div>
+        <div style="font-size:13px;color:var(--dim);margin-top:4px;">${lv.cols}×${lv.rows}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => selectLevel(lv.lv));
+    list.appendChild(card);
+  });
+
+  // 하트
+  renderHearts('hearts-display');
+
+  // 미션
+  const ml = document.getElementById('mission-list');
+  ml.innerHTML = '';
+  missions.list.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'mission-card' + (m.done ? ' mission-done' : '');
+    el.innerHTML = `<div class="mission-icon">${m.done?'✅':m.icon}</div><div class="mission-info"><div class="mission-name">${m.name}</div><div class="mission-prog">${m.prog}/${m.goal}</div></div><div class="mission-reward">+${m.reward} XP</div>`;
+    ml.appendChild(el);
+  });
+
+  // 시작 버튼
+  const c = getLevelConfig(selectedLevel);
+  const btn = document.getElementById('btn-start');
+  btn.textContent = hearts > 0 ? `${c.emoji} 단계 ${selectedLevel} 시작 ❤️×${hearts}` : '하트 부족';
+  btn.style.opacity = hearts > 0 ? '1' : '.5';
+  btn.style.background = hearts > 0
+    ? `linear-gradient(135deg, ${lightenColor(c.color)}, ${c.color})`
+    : '';
+}
+
+function selectLevel(lv) {
+  selectedLevel = lv;
+  localStorage.setItem('nh_selected_lv', lv);
+  applyTheme(getLevelConfig(lv).theme);
+  renderLobby();
+  // 선택한 카드로 스크롤
+  const cards = document.querySelectorAll('#level-select-list > div');
+  if (cards[lv - 1]) cards[lv - 1].scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function lightenColor(hex) {
+  // 간단한 색상 밝히기
+  return hex;
+}
+
+function renderHearts(id) {
+  const wrap = document.getElementById(id);
+  wrap.innerHTML = '';
+  for(let i=0;i<5;i++){const el=document.createElement('div');el.className='heart'+(i<hearts?' ':' empty');el.textContent='❤️';wrap.appendChild(el);}
+}
+
+// ════════════════════════════════════════
+//  카운트다운
+// ════════════════════════════════════════
+function startCountdown() {
+  if(hearts<=0){postToRN({type:'REQUEST_HEART'});return;}
+  hearts=Math.max(0,hearts-1);
+  localStorage.setItem('nh_hearts',hearts);
+  postToRN({type:'HEART_USED',hearts});
+
+  cfg = getLevelConfig(selectedLevel);
+  applyTheme(cfg.theme);
+  showScreen('screen-countdown');
+  let count=3;
+  const el=document.getElementById('count-display');
+  const lb=document.getElementById('count-lbl');
+  function tick(){
+    if(count>0){el.className='count-num';el.textContent=count;el.style.animation='none';el.offsetHeight;el.style.animation='';lb.textContent=count===3?'READY':count===2?'SET':'GO?';SFX.tick();count--;setTimeout(tick,750);}
+    else{el.className='count-go';el.textContent='GO!';el.style.animation='none';el.offsetHeight;el.style.animation='';lb.textContent='';setTimeout(startGame,550);}
+  }
+  tick();
+}
+
+// ════════════════════════════════════════
+//  게임 시작
+// ════════════════════════════════════════
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function startGame() {
+  nextNum=1; wrongCount=0; gameActive=true; elapsed=0;
+  numbers=shuffle([...Array(cfg.count)].map((_,i)=>i+1));
+
+  showScreen('screen-game');
+  buildGrid();
+  updateGameMeta();
+
+  document.getElementById('timer-val').textContent='0.00';
+  document.getElementById('timer-val').classList.remove('urgent');
+  document.getElementById('game-lv-badge').textContent = `단계 ${selectedLevel} ${cfg.name} · ${cfg.count}개`;
+
+  if (!isMuted) startBGM(cfg.theme);
+  startTime=performance.now();
+  tickTimer();
+
+  // 숫자 이동 시스템
+  if(cfg.move>0){
+    moveTimer=setInterval(()=>{
+      if(!gameActive)return;
+      shuffleRemainingCells();
+    }, cfg.move);
+  }
+}
+
+// 이동 시스템: 아직 안 누른 셀 위치 섞기
+function shuffleRemainingCells() {
+  const cells = Array.from(document.querySelectorAll('.cell:not(.done)'));
+  if(cells.length<2) return;
+  const nums = cells.map(c=>parseInt(c.dataset.num));
+  const shuffled = shuffle([...nums]);
+  cells.forEach((c,i)=>{
+    c.dataset.num=shuffled[i];
+    const span=c.querySelector('span');
+    if(span) span.textContent=shuffled[i];
+    if(!c.classList.contains('hidden-num')){
+      c.textContent='';
+      const s=document.createElement('span');
+      s.textContent=shuffled[i];
+      c.appendChild(s);
+    }
+    c.classList.add('moving');
+    setTimeout(()=>c.classList.remove('moving'),300);
+  });
+  SFX.hidden();
+}
+
+function tickTimer(){
+  if(!gameActive)return;
+  elapsed=(performance.now()-startTime)/1000;
+  const el=document.getElementById('timer-val');
+  el.textContent=elapsed.toFixed(2);
+  if(cfg.timeLimit>0&&elapsed>=cfg.timeLimit){
+    // 시간 초과
+    gameActive=false; cancelAnimationFrame(timerRAF); clearInterval(moveTimer);
+    stopBGM(); SFX.wrong();
+    flashScreen('rgba(255,61,61,.25)');
+    setTimeout(()=>showClear(false),400);
+    return;
+  }
+  if(cfg.timeLimit>0&&elapsed>=cfg.timeLimit-5) el.classList.add('urgent');
+  timerRAF=requestAnimationFrame(tickTimer);
+}
+
+// ════════════════════════════════════════
+//  그리드 빌드
+// ════════════════════════════════════════
+function buildGrid(){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  grid.style.gridTemplateColumns = `repeat(${cfg.cols}, 1fr)`;
+
+  // 단계별 폰트 크기 (cols 기준)
+  const fontMap = { 4:18, 5:15, 6:13 };
+  const fontSize = (fontMap[cfg.cols] || 13) + 'px';
+  numbers.forEach(num=>{
+    const cell=document.createElement('div');
+    cell.className='cell';
+    cell.dataset.num=num;
+    const isHidden=cfg.hide>0&&Math.random()<cfg.hide;
+    if(isHidden){
+      cell.classList.add('hidden-num');
+      const s=document.createElement('span');s.textContent=num;cell.appendChild(s);
+    } else {
+      const s=document.createElement('span');s.textContent=num;cell.appendChild(s);
+    }
+    cell.style.fontSize=fontSize;
+    cell.addEventListener('touchstart',onCellTap,{passive:false});
+    cell.addEventListener('mousedown', onCellTap);
+    grid.appendChild(cell);
+  });
+}
+
+function updateGameMeta(){
+  const done=nextNum-1;
+  const pct=(done/cfg.count)*100;
+  document.getElementById('game-prog-fill').style.width=pct+'%';
+  document.getElementById('game-prog-txt').textContent=`${done} / ${cfg.count}`;
+  const el=document.getElementById('next-num');
+  el.textContent=nextNum<=cfg.count?nextNum:'✓';
+  el.classList.remove('pop');el.offsetHeight;el.classList.add('pop');
+  setTimeout(()=>el.classList.remove('pop'),120);
+}
+
+// ════════════════════════════════════════
+//  탭 처리
+// ════════════════════════════════════════
+function onCellTap(e){
+  if(!gameActive)return;
+  e.preventDefault();
+  const cell=e.currentTarget;
+  const tapped=parseInt(cell.dataset.num);
+
+  if(tapped===nextNum){
+    // 정답
+    SFX.correct();
+    if(wrongCount===0&&nextNum>1) SFX.combo(Math.min(nextNum,5));
+
+    // 숨김 숫자였으면 드러내기
+    if(cell.classList.contains('hidden-num')) cell.classList.remove('hidden-num');
+    cell.className='cell correct';
+    cell.removeEventListener('touchstart',onCellTap);
+    cell.removeEventListener('mousedown', onCellTap);
+
+    const rect=cell.getBoundingClientRect();
+    const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+
+    if(tapped===cfg.count){
+      // 마지막!
+      spawnBurst(cx,cy);
+      setTimeout(()=>spawnBurst(W/2,H/2),200);
+    } else {
+      spawnParticles(cx,cy,['var(--accent)','var(--gold)','var(--accent2)'],8);
+    }
+
+    nextNum++;
+    updateGameMeta();
+
+    setTimeout(()=>{ cell.className='cell done'; },280);
+
+    if(nextNum>cfg.count){
+      gameActive=false;
+      cancelAnimationFrame(timerRAF);
+      clearInterval(moveTimer);
+      stopBGM();
+      SFX.clear();
+      setTimeout(()=>showClear(true),500);
+    }
+
+  } else {
+    // 오답
+    wrongCount++;
+    SFX.wrong();
+    cell.classList.add('wrong');
+    flashScreen('rgba(255,61,61,.2)');
+    if(navigator.vibrate) navigator.vibrate(50);
+    setTimeout(()=>cell.classList.remove('wrong'),350);
+  }
+}
+
+function flashScreen(color){
+  const o=document.getElementById('flash-overlay');
+  o.style.background=color;o.style.opacity='1';
+  setTimeout(()=>{o.style.opacity='0';},120);
+}
+
+const W=window.innerWidth, H=window.innerHeight;
+
+// ════════════════════════════════════════
+//  클리어 화면
+// ════════════════════════════════════════
+function showClear(success) {
+  showScreen('screen-clear');
+  particles=[];
+
+  if(!success){
+    // 시간초과 게임오버
+    document.getElementById('clear-trophy').textContent='💀';
+    document.getElementById('clear-title' ) && (document.querySelector('.clear-title').textContent='TIME OVER');
+    document.getElementById('clear-time').textContent='--';
+    document.getElementById('clear-badge').textContent='❌ 시간 초과';
+    document.getElementById('xp-gained').textContent='';
+    document.getElementById('btn-next-lv').style.display='none';
+    return;
+  }
+
+  const finalTime = elapsed;
+  const best = getBest(selectedLevel);
+  const isNew = best === 0 || finalTime < best;
+  if (isNew) setBest(selectedLevel, finalTime);
+
+  const stars = getStars(finalTime, cfg.stars);
+  checkMissions(finalTime, wrongCount);
+
+  document.getElementById('clear-trophy').textContent = stars===3?'🥇':stars===2?'🥈':stars===1?'🥉':'🏅';
+  document.querySelector('.clear-title').textContent = success ? 'CLEAR!' : 'TIME OVER';
+  document.getElementById('clear-time').textContent = finalTime.toFixed(2);
+  document.getElementById('clear-badge').textContent = success ? '⭐'.repeat(stars)+` 스타 ${stars}개` : '❌ 시간 초과';
+  document.getElementById('stat-best').textContent = getBest(selectedLevel) > 0 ? getBest(selectedLevel).toFixed(2)+'s' : '--';
+  document.getElementById('stat-rank').textContent = weeklyRankPct ? '#'+weeklyRankPct : '--';
+  document.getElementById('stat-wrong').textContent = wrongCount;
+  document.getElementById('new-record').style.display = isNew && success ? 'flex' : 'none';
+  document.getElementById('xp-gained').textContent = success ? `단계 ${selectedLevel} · ${cfg.count}개 · ${finalTime.toFixed(2)}초` : '';
+  document.getElementById('btn-next-lv').style.display = selectedLevel < LEVELS.length && success ? 'block' : 'none';
+  document.getElementById('btn-next-lv').textContent = `단계 ${selectedLevel+1} 도전 →`;
+
+  postToRN({ type:'GAME_OVER', level:selectedLevel, time:parseFloat(finalTime.toFixed(2)), stars, wrong:wrongCount, isNew });
+}
+
+function getStars(t, times) {
+  if(t<=times[0]) return 3;
+  if(t<=times[1]) return 2;
+  if(t<=times[2]) return 1;
+  return 0;
+}
+
+function checkMissions(time, wrong) {
+  let changed=false;
+  missions.list.forEach(m=>{
+    if(m.done) return;
+    if(m.id==='play3'){m.prog=Math.min(m.goal,m.prog+1);if(m.prog>=m.goal){m.done=true;currentXP+=m.reward;changed=true;}}
+    if(m.id==='perfect'&&wrong===0){m.prog=1;m.done=true;currentXP+=m.reward;changed=true;}
+    if(m.id==='fast'&&time<=15){m.prog=1;m.done=true;currentXP+=m.reward;changed=true;}
+  });
+  if(changed) saveMissions();
+}
+
+// ════════════════════════════════════════
+//  버튼
+// ════════════════════════════════════════
+document.getElementById('btn-start').addEventListener('click', startCountdown);
+document.getElementById('btn-ranking').addEventListener('click', ()=>postToRN({type:'SHOW_RANKING'}));
+
+// 뮤트 토글
+let isMuted = localStorage.getItem('nh_mute') === '1';
+function updateMuteBtn() {
+  document.getElementById('btn-mute').textContent = isMuted ? '🔇' : '🔊';
+  if (isMuted) stopBGM();
+}
+document.getElementById('btn-mute').addEventListener('click', () => {
+  isMuted = !isMuted;
+  localStorage.setItem('nh_mute', isMuted ? '1' : '0');
+  updateMuteBtn();
+  if (!isMuted) startBGM(getLevelConfig(currentLevel).theme);
+});
+updateMuteBtn();
+document.getElementById('btn-retry').addEventListener('click', () => {
+  applyTheme(getLevelConfig(selectedLevel).theme);
+  startCountdown();
+});
+document.getElementById('btn-next-lv').addEventListener('click', () => {
+  selectLevel(Math.min(selectedLevel + 1, LEVELS.length));
+  showScreen('screen-lobby');
+});
+document.getElementById('btn-share').addEventListener('click', () => postToRN({ type:'SHARE', level:selectedLevel, time:elapsed.toFixed(2), stars:getStars(elapsed, cfg?.stars||[8,12,18]) }));
+document.getElementById('btn-home').addEventListener('click', () => { renderLobby(); showScreen('screen-lobby'); });
+
+// ════════════════════════════════════════
+//  RN 통신
+// ════════════════════════════════════════
+function postToRN(data){
+  try{if(window.ReactNativeWebView)window.ReactNativeWebView.postMessage(JSON.stringify(data));else console.log('[→RN]',JSON.stringify(data));}catch(e){}
+}
+window.addEventListener('message',e=>{
+  try{
+    const msg=JSON.parse(e.data);
+    if(msg.type==='INIT'){hearts=msg.hearts??5;weeklyRankPct=msg.rankPct??null;localStorage.setItem('nh_hearts',hearts);renderLobby();}
+    if(msg.type==='HEART_RECEIVED'){hearts=Math.min(5,hearts+(msg.count??1));localStorage.setItem('nh_hearts',hearts);renderLobby();}
+    if(msg.type==='RANK_UPDATE'){weeklyRankPct=msg.rankPct;document.getElementById('stat-rank').textContent='#'+msg.rankPct;}
+  }catch(e){}
+});
+
+// ════════════════════════════════════════
+//  초기화
+// ════════════════════════════════════════
+renderLobby();
+</script>
+</body>
+</html>
