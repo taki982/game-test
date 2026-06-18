@@ -1341,7 +1341,7 @@ document.getElementById('btn-mute').addEventListener('click', () => {
   isMuted = !isMuted;
   localStorage.setItem('nh_mute', isMuted ? '1' : '0');
   updateMuteBtn();
-  if (!isMuted) startBGM(getLevelConfig(currentLevel).theme);
+  if (!isMuted) startBGM(getLevelConfig(selectedLevel).theme);
 });
 updateMuteBtn();
 document.getElementById('btn-retry').addEventListener('click', () => {
@@ -1349,8 +1349,10 @@ document.getElementById('btn-retry').addEventListener('click', () => {
   startCountdown();
 });
 document.getElementById('btn-next-lv').addEventListener('click', () => {
-  selectLevel(Math.min(selectedLevel + 1, LEVELS.length));
+  const nextLv = Math.min(selectedLevel + 1, LEVELS.length);
+  renderLobby();
   showScreen('screen-lobby');
+  setTimeout(() => goToSlide(nextLv - 1), 50);
 });
 document.getElementById('btn-share').addEventListener('click', () => postToRN({ type:'SHARE', level:selectedLevel, time:elapsed.toFixed(2), stars:getStars(elapsed, cfg?.stars||[8,12,18]) }));
 document.getElementById('btn-home').addEventListener('click', () => { renderLobby(); showScreen('screen-lobby'); });
