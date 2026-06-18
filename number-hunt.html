@@ -45,53 +45,204 @@ body{background:var(--bg);font-family:-apple-system,'Helvetica Neue',sans-serif;
 .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--dim);margin-top:8px;}
 
 /* ══ LOBBY ══ */
-#screen-lobby{gap:0;justify-content:flex-start;padding-top:48px;}
-.lobby-header{display:flex;flex-direction:column;align-items:center;margin-bottom:24px;}
+#screen-lobby{gap:0;justify-content:flex-start;padding:0;overflow:hidden;}
+
+/* 상단 헤더 */
+.lobby-top{
+  width:100%;padding:48px 24px 16px;
+  display:flex;flex-direction:column;align-items:center;
+  background:linear-gradient(180deg,var(--bg2) 0%,transparent 100%);
+}
+.lobby-game-title{
+  font-size:11px;font-weight:800;letter-spacing:3px;
+  color:var(--accent);margin-bottom:6px;
+}
 .lobby-title{font-size:28px;font-weight:900;color:var(--text);letter-spacing:-1px;}
 .lobby-sub{font-size:13px;color:var(--dim);margin-top:4px;}
 
-/* 레벨 카드 */
-.level-card{
-  width:100%;max-width:340px;background:var(--card);border-radius:20px;
-  border:1.5px solid var(--border);padding:18px 20px;margin-bottom:16px;
+/* ── 스와이프 카드 슬라이더 ── */
+.card-slider-wrap{
+  width:100%;flex:none;
+  display:flex;flex-direction:column;align-items:center;
+  margin:16px 0 10px;
+}
+.card-slider{
+  width:100%;overflow:hidden;
+  position:relative;
+}
+.card-track{
+  display:flex;
+  padding:4px 10px;
+  transition:transform .35s cubic-bezier(.25,.46,.45,.94);
+  will-change:transform;
+}
+.level-swipe-card{
+  flex:none;
+  width:calc(100vw - 80px);
+  margin:0 8px;
+  background:var(--card);
+  border-radius:16px;
+  border:2px solid var(--border);
+  padding:14px 16px;
+  display:flex;flex-direction:row;align-items:center;gap:12px;
   box-shadow:0 4px 16px var(--shadow);
+  transition:border-color .2s, box-shadow .2s, transform .2s;
+  position:relative;overflow:hidden;
 }
-.level-row{display:flex;align-items:center;justify-content:space-between;}
-.level-badge{
-  display:flex;align-items:center;gap:8px;
+.level-swipe-card.active-card{
+  transform:scale(1.02);
 }
-.level-num{font-size:26px;font-weight:900;color:var(--accent);}
-.level-name{font-size:13px;color:var(--dim);}
-.level-best{font-size:13px;color:var(--gold);font-weight:700;}
-.xp-bar-bg{width:100%;height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:10px;}
-.xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s;}
+.level-swipe-card::before{
+  content:'';position:absolute;inset:0;border-radius:14px;
+  background:radial-gradient(ellipse at 50% 0%,var(--card-glow,rgba(255,149,0,.08)) 0%,transparent 70%);
+  pointer-events:none;
+}
+.card-emoji{font-size:36px;line-height:1;flex-shrink:0;}
+.card-main{flex:1;display:flex;flex-direction:column;gap:3px;}
+.card-lv-label{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--dim);}
+.card-name{font-size:17px;font-weight:900;color:var(--text);letter-spacing:-.5px;}
+.card-desc{font-size:11px;color:var(--dim);}
+.card-grid-preview{
+  display:grid;gap:2px;margin:4px 0;
+}
+.card-cell-preview{
+  width:14px;height:14px;border-radius:3px;
+  background:var(--border);
+}
+.card-cell-preview.filled{background:var(--accent);}
+.card-cell-preview.hidden{background:var(--dim);opacity:.4;}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap;}
+.card-tag{
+  font-size:9px;font-weight:700;
+  padding:1px 6px;border-radius:6px;
+}
+.card-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.card-best{font-size:11px;font-weight:700;color:var(--gold);}
+
+/* 인디케이터 */
+.card-indicators{
+  display:flex;gap:6px;margin-top:4px;
+}
+.card-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--border);
+  transition:all .2s;
+}
+.card-dot.active{
+  width:22px;border-radius:4px;
+  background:var(--accent);
+}
+
+/* 하단 컨트롤 */
+.lobby-bottom{
+  width:100%;padding:0 20px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  margin-top:auto;
+}
 
 /* 일일 미션 */
-.mission-wrap{width:100%;max-width:340px;margin-bottom:16px;}
-.mission-title{font-size:11px;font-weight:800;color:var(--dim);letter-spacing:2px;margin-bottom:8px;}
+.mission-wrap{width:100%;max-width:360px;margin-bottom:8px;}
+.mission-title{font-size:11px;font-weight:800;color:var(--dim);letter-spacing:2px;margin-bottom:6px;}
 .mission-card{
-  background:var(--card);border-radius:14px;border:1.5px solid var(--border);
-  padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;
+  background:var(--card);border-radius:12px;border:1.5px solid var(--border);
+  padding:10px 12px;display:flex;align-items:center;gap:8px;margin-bottom:5px;
 }
-.mission-icon{font-size:22px;}
+.mission-icon{font-size:18px;}
 .mission-info{flex:1;}
-.mission-name{font-size:13px;font-weight:700;color:var(--text);}
-.mission-prog{font-size:11px;color:var(--dim);margin-top:2px;}
-.mission-reward{font-size:12px;font-weight:700;color:var(--gold);}
+.mission-name{font-size:12px;font-weight:700;color:var(--text);}
+.mission-prog{font-size:10px;color:var(--dim);margin-top:1px;}
+.mission-reward{font-size:11px;font-weight:700;color:var(--gold);}
 .mission-done{opacity:.5;text-decoration:line-through;}
 
 /* 하트 */
-.hearts-row{display:flex;gap:5px;margin-bottom:20px;}
-.heart{font-size:22px;}
+.hearts-row{display:flex;gap:5px;margin-bottom:4px;}
+.heart{font-size:20px;}
 .heart.empty{filter:grayscale(1);opacity:.3;}
 
-/* ══ COUNTDOWN ══ */
-#screen-countdown .count-num{font-size:130px;font-weight:900;color:var(--accent);line-height:1;animation:popIn .35s cubic-bezier(.175,.885,.32,1.275);text-shadow:0 0 40px var(--shadow);}
-#screen-countdown .count-go{font-size:80px;font-weight:900;color:var(--accent);line-height:1;animation:popIn .35s cubic-bezier(.175,.885,.32,1.275);}
-#screen-countdown .count-lbl{font-size:15px;color:var(--dim);margin-top:10px;letter-spacing:3px;font-weight:700;}
-@keyframes popIn{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+/* ══ COUNTDOWN — 게임스러운 버전 ══ */
+#screen-countdown{
+  position:relative;overflow:hidden;
+  background:var(--bg);
+  justify-content:center;
+}
+/* 배경 펄스 원 */
+.cd-bg-ring{
+  position:absolute;
+  border-radius:50%;
+  border:2px solid var(--accent);
+  opacity:0;
+  animation:cdRingExpand 1s ease-out infinite;
+}
+@keyframes cdRingExpand{
+  0%{width:100px;height:100px;opacity:.6;transform:translate(-50%,-50%);}
+  100%{width:500px;height:500px;opacity:0;transform:translate(-50%,-50%);}
+}
 
-/* ══ GAME ══ */
+/* 상단 레벨 정보 */
+.cd-level-info{
+  position:absolute;top:60px;left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.cd-level-badge{
+  font-size:11px;font-weight:800;letter-spacing:2px;
+  color:var(--accent);background:var(--border);
+  padding:3px 12px;border-radius:10px;
+}
+.cd-level-name{font-size:16px;font-weight:800;color:var(--text);}
+
+/* 카운트 원형 */
+.cd-circle-wrap{
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.cd-svg{
+  position:absolute;
+  transform:rotate(-90deg);
+}
+.cd-ring-bg{fill:none;stroke:var(--border);stroke-width:6;}
+.cd-ring-fill{
+  fill:none;stroke:var(--accent);stroke-width:6;
+  stroke-linecap:round;
+  stroke-dasharray:283;
+  stroke-dashoffset:0;
+  transition:stroke-dashoffset .7s linear, stroke .3s;
+}
+.cd-num{
+  font-size:100px;font-weight:900;color:var(--text);
+  line-height:1;letter-spacing:-3px;
+  animation:cdNumPop .35s cubic-bezier(.175,.885,.32,1.275);
+  position:relative;z-index:1;
+}
+.cd-go{
+  font-size:64px;font-weight:900;color:var(--accent);
+  animation:cdNumPop .35s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes cdNumPop{
+  from{transform:scale(.5);opacity:0;}
+  to{transform:scale(1);opacity:1;}
+}
+
+/* 하단 힌트 */
+.cd-hint{
+  position:absolute;bottom:80px;left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.cd-hint-text{font-size:13px;color:var(--dim);letter-spacing:1px;font-weight:600;}
+/* 미니 그리드 프리뷰 */
+.cd-grid-preview{
+  display:grid;gap:4px;
+  opacity:.5;
+}
+.cd-cell{
+  width:24px;height:24px;border-radius:5px;
+  background:var(--border);
+}
+.cd-cell.lit{background:var(--accent);animation:cellLit .4s ease forwards;}
+@keyframes cellLit{
+  0%{transform:scale(0);opacity:0;}
+  60%{transform:scale(1.15);}
+  100%{transform:scale(1);opacity:1;}
+}
 #screen-game{position:relative;overflow:hidden;background:var(--bg);justify-content:flex-start;padding:0;}
 #particle-canvas{position:absolute;inset:0;pointer-events:none;width:100%;height:100%;z-index:20;}
 .flash-overlay{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .06s;z-index:15;}
@@ -166,33 +317,67 @@ body{background:var(--bg);font-family:-apple-system,'Helvetica Neue',sans-serif;
 
 <!-- ══ LOBBY ══ -->
 <div class="screen active" id="screen-lobby">
-  <div class="lobby-header">
-    <div style="font-size:13px;font-weight:800;color:var(--accent);background:var(--border);border-radius:12px;padding:4px 14px;margin-bottom:10px;">Number Hunt</div>
+
+  <!-- 상단 타이틀 -->
+  <div class="lobby-top">
+    <div class="lobby-game-title">NUMBER HUNT</div>
     <div class="lobby-title">숫자를 찾아라!</div>
-    <div class="lobby-sub">난이도를 선택하고 게임을 시작하세요</div>
+    <div class="lobby-sub">← 스와이프해서 난이도 선택 →</div>
   </div>
 
-  <!-- 난이도 선택 카드 -->
-  <div id="level-select-list" style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;overflow-y:auto;max-height:55vh;padding:2px 0;"></div>
-
-  <!-- 일일 미션 -->
-  <div class="mission-wrap" style="width:100%;max-width:360px;">
-    <div class="mission-title">📋 오늘의 미션</div>
-    <div id="mission-list"></div>
+  <!-- 스와이프 카드 슬라이더 -->
+  <div class="card-slider-wrap">
+    <div class="card-slider" id="card-slider">
+      <div class="card-track" id="card-track"></div>
+    </div>
+    <!-- 인디케이터 -->
+    <div class="card-indicators" id="card-indicators"></div>
   </div>
 
-  <div class="hearts-row" id="hearts-display"></div>
-  <button class="btn btn-main" id="btn-start">게임 시작</button>
-  <div style="display:flex;gap:8px;width:100%;max-width:320px;margin-top:8px;">
-    <button class="btn btn-outline" id="btn-ranking" style="flex:1;margin-top:0">🏆 랭킹</button>
-    <button class="btn btn-outline" id="btn-mute" style="width:52px;margin-top:0;padding:0;font-size:20px;">🔊</button>
+  <!-- 하단 컨트롤 -->
+  <div class="lobby-bottom">
+    <!-- 미션 -->
+    <div class="mission-wrap">
+      <div class="mission-title">📋 오늘의 미션</div>
+      <div id="mission-list"></div>
+    </div>
+
+    <div class="hearts-row" id="hearts-display" style="display:none"></div>
+    <button class="btn btn-main" id="btn-start">게임 시작</button>
+    <div style="display:flex;gap:8px;width:100%;max-width:320px;">
+      <button class="btn btn-outline" id="btn-ranking" style="flex:1;margin-top:0">🏆 랭킹</button>
+      <button class="btn btn-outline" id="btn-mute" style="width:52px;margin-top:0;padding:0;font-size:20px;">🔊</button>
+    </div>
   </div>
 </div>
 
-<!-- ══ COUNTDOWN ══ -->
+<!-- ══ COUNTDOWN — 게임스러운 버전 ══ -->
 <div class="screen" id="screen-countdown">
-  <div id="count-display" class="count-num">3</div>
-  <div class="count-lbl" id="count-lbl">READY</div>
+  <!-- 배경 펄스 링 -->
+  <div class="cd-bg-ring" style="left:50%;top:50%;animation-delay:0s;"></div>
+  <div class="cd-bg-ring" style="left:50%;top:50%;animation-delay:.33s;"></div>
+  <div class="cd-bg-ring" style="left:50%;top:50%;animation-delay:.66s;"></div>
+
+  <!-- 레벨 정보 -->
+  <div class="cd-level-info">
+    <div class="cd-level-badge" id="cd-lv-badge">단계 1</div>
+    <div class="cd-level-name" id="cd-lv-name">쉬움 · 10개</div>
+  </div>
+
+  <!-- 카운트 원형 -->
+  <div class="cd-circle-wrap">
+    <svg class="cd-svg" width="160" height="160" viewBox="0 0 100 100">
+      <circle class="cd-ring-bg" cx="50" cy="50" r="45"/>
+      <circle class="cd-ring-fill" id="cd-ring" cx="50" cy="50" r="45"/>
+    </svg>
+    <div id="count-display" class="cd-num">3</div>
+  </div>
+
+  <!-- 하단 힌트 + 미니 그리드 -->
+  <div class="cd-hint">
+    <div class="cd-hint-text" id="cd-hint-text">순서대로 빠르게 탭!</div>
+    <div class="cd-grid-preview" id="cd-grid-preview"></div>
+  </div>
 </div>
 
 <!-- ══ GAME ══ -->
@@ -269,7 +454,7 @@ const LEVELS = [
     lv: 3, name: '어려움', emoji: '🔥',
     desc: '20개 숫자, 일부 숨김',
     cols: 5, rows: 4, count: 20,
-    timeLimit: 0, hide: 0.2, move: 0,
+    timeLimit: 0, hide: 0.10, move: 0,
     theme: 'night', stars: [12, 18, 28],
     color: '#9D4EDD',
   },
@@ -277,7 +462,7 @@ const LEVELS = [
     lv: 4, name: '매우 어려움', emoji: '💀',
     desc: '25개 숫자, 숨김 + 이동',
     cols: 5, rows: 5, count: 25,
-    timeLimit: 0, hide: 0.2, move: 4000,
+    timeLimit: 0, hide: 0.12, move: 6000,
     theme: 'fire', stars: [16, 24, 36],
     color: '#FF4400',
   },
@@ -285,8 +470,8 @@ const LEVELS = [
     lv: 5, name: '극한', emoji: '⚡',
     desc: '30개 숫자, 숨김+이동+시간제한',
     cols: 6, rows: 5, count: 30,
-    timeLimit: 45, hide: 0.25, move: 3000,
-    theme: 'cyber', stars: [20, 30, 45],
+    timeLimit: 60, hide: 0.15, move: 5000,
+    theme: 'cyber', stars: [25, 38, 55],
     color: '#00B4FF',
   },
 ];
@@ -683,58 +868,113 @@ function applyTheme(theme) {
 }
 
 // ════════════════════════════════════════
-//  로비 UI
+//  로비 UI — 스와이프 카드
 // ════════════════════════════════════════
+let sliderIdx = selectedLevel - 1;
+
 function renderLobby() {
   applyTheme(getLevelConfig(selectedLevel).theme);
+  buildSliderCards();
+  goToSlide(selectedLevel - 1, false);
+  renderHearts('hearts-display');
+  renderMissions();
+  updateStartBtn();
+}
 
-  // ─── 레벨 선택 카드 5개 ───
-  const list = document.getElementById('level-select-list');
-  list.innerHTML = '';
-  LEVELS.forEach(lv => {
+function buildSliderCards() {
+  const track = document.getElementById('card-track');
+  const dots  = document.getElementById('card-indicators');
+  track.innerHTML = '';
+  dots.innerHTML  = '';
+
+  LEVELS.forEach((lv, i) => {
     const best = getBest(lv.lv);
-    const isSelected = lv.lv === selectedLevel;
     const tags = [];
-    if (lv.hide > 0)      tags.push('숨김');
-    if (lv.move > 0)      tags.push('이동');
-    if (lv.timeLimit > 0) tags.push(`${lv.timeLimit}초 제한`);
+    if (lv.hide > 0)      tags.push({ label: `숨김 ${Math.round(lv.hide*100)}%`, color: lv.color });
+    if (lv.move > 0)      tags.push({ label: `${lv.move/1000}초 이동`, color: lv.color });
+    if (lv.timeLimit > 0) tags.push({ label: `${lv.timeLimit}초 제한`, color: '#FF3D3D' });
+
+    // 미니 그리드 프리뷰
+    const previewCells = Array(lv.count).fill(0).map((_, ci) => {
+      const isHidden = lv.hide > 0 && ci < Math.floor(lv.count * lv.hide);
+      const isFilled = ci < 4;
+      return `<div class="card-cell-preview ${isFilled?'filled':''} ${isHidden&&!isFilled?'hidden':''}"></div>`;
+    }).join('');
 
     const card = document.createElement('div');
-    card.style.cssText = `
-      background:${isSelected ? 'var(--card)' : 'var(--bg2)'};
-      border:2px solid ${isSelected ? lv.color : 'var(--border)'};
-      border-radius:16px; padding:14px 16px;
-      display:flex; align-items:center; gap:12px;
-      cursor:pointer; transition:all .15s;
-      box-shadow:${isSelected ? `0 4px 16px ${lv.color}33` : 'none'};
-    `;
+    card.className = 'level-swipe-card';
+    card.style.setProperty('--card-glow', lv.color + '20');
     card.innerHTML = `
-      <div style="width:44px;height:44px;border-radius:12px;background:${lv.color}22;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${lv.emoji}</div>
-      <div style="flex:1;min-width:0;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-          <span style="font-size:15px;font-weight:800;color:var(--text);">단계 ${lv.lv}</span>
-          <span style="font-size:12px;font-weight:700;color:${lv.color};">${lv.name}</span>
-          ${isSelected ? `<span style="font-size:10px;font-weight:800;color:#fff;background:${lv.color};border-radius:8px;padding:1px 7px;margin-left:2px;">선택됨</span>` : ''}
-        </div>
-        <div style="font-size:12px;color:var(--dim);margin-bottom:4px;">${lv.desc}</div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          ${tags.map(t=>`<span style="font-size:10px;font-weight:700;color:${lv.color};background:${lv.color}18;border-radius:6px;padding:1px 6px;">${t}</span>`).join('')}
+      <div class="card-emoji">${lv.emoji}</div>
+      <div class="card-main">
+        <div class="card-lv-label">단계 ${lv.lv}</div>
+        <div class="card-name" style="color:${lv.color}">${lv.name}</div>
+        <div class="card-desc">${lv.desc}</div>
+        <div class="card-tags">
+          ${tags.map(t=>`<span class="card-tag" style="color:${t.color};background:${t.color}20">${t.label}</span>`).join('')}
+          ${tags.length===0?'<span class="card-tag" style="color:var(--green);background:var(--green)20">기본 모드</span>':''}
         </div>
       </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--gold);">${best > 0 ? best.toFixed(2)+'s' : '--'}</div>
-        <div style="font-size:10px;color:var(--dim);margin-top:2px;">최고기록</div>
-        <div style="font-size:13px;color:var(--dim);margin-top:4px;">${lv.cols}×${lv.rows}</div>
+      <div class="card-right">
+        <div class="card-grid-preview" style="grid-template-columns:repeat(${Math.min(lv.cols,5)},14px)">${previewCells}</div>
+        <div class="card-best">${best > 0 ? '🏅 '+best.toFixed(2)+'s' : '기록 없음'}</div>
       </div>
     `;
-    card.addEventListener('click', () => selectLevel(lv.lv));
-    list.appendChild(card);
+    track.appendChild(card);
+
+    // 인디케이터 점
+    const dot = document.createElement('div');
+    dot.className = 'card-dot';
+    dot.addEventListener('click', () => goToSlide(i));
+    dots.appendChild(dot);
   });
 
-  // 하트
-  renderHearts('hearts-display');
+  initSwipe();
+}
 
-  // 미션
+function goToSlide(idx, animate = true) {
+  sliderIdx = Math.max(0, Math.min(LEVELS.length - 1, idx));
+  selectedLevel = sliderIdx + 1;
+  localStorage.setItem('nh_selected_lv', selectedLevel);
+
+  const track = document.getElementById('card-track');
+  // 카드 폭: 100vw - 80px + 양쪽 margin 16px = 100vw - 64px
+  const cardW = window.innerWidth - 64;
+  // 첫 카드는 좌측 패딩 20px, 이후 카드들은 cardW + 16px 간격
+  const offset = sliderIdx * (cardW + 16);
+
+  track.style.transition = animate ? 'transform .35s cubic-bezier(.25,.46,.45,.94)' : 'none';
+  track.style.transform  = `translateX(calc(-${offset}px + 10px))`;
+
+  // 카드 활성화
+  Array.from(track.children).forEach((c, i) => {
+    c.classList.toggle('active-card', i === sliderIdx);
+    c.style.border = `2px solid ${i === sliderIdx ? LEVELS[i].color : 'var(--border)'}`;
+    c.style.boxShadow = i === sliderIdx ? `0 6px 24px ${LEVELS[i].color}50` : '0 2px 8px var(--shadow)';
+    c.style.opacity = i === sliderIdx ? '1' : '0.6';
+    c.style.transform = i === sliderIdx ? 'scale(1)' : 'scale(0.95)';
+  });
+
+  // 인디케이터
+  Array.from(document.getElementById('card-indicators').children).forEach((d, i) => {
+    d.classList.toggle('active', i === sliderIdx);
+    d.style.background = i === sliderIdx ? LEVELS[i].color : '';
+  });
+
+  applyTheme(LEVELS[sliderIdx].theme);
+  updateStartBtn();
+}
+
+function updateStartBtn() {
+  const c = getLevelConfig(selectedLevel);
+  const btn = document.getElementById('btn-start');
+  btn.textContent = `${c.emoji} 단계 ${selectedLevel} · ${c.name} 시작`;
+  btn.style.opacity = '1';
+  btn.style.background = `linear-gradient(135deg, ${c.color}cc, ${c.color})`;
+  btn.style.boxShadow = `0 6px 20px ${c.color}55`;
+}
+
+function renderMissions() {
   const ml = document.getElementById('mission-list');
   ml.innerHTML = '';
   missions.list.forEach(m => {
@@ -743,56 +983,112 @@ function renderLobby() {
     el.innerHTML = `<div class="mission-icon">${m.done?'✅':m.icon}</div><div class="mission-info"><div class="mission-name">${m.name}</div><div class="mission-prog">${m.prog}/${m.goal}</div></div><div class="mission-reward">+${m.reward} XP</div>`;
     ml.appendChild(el);
   });
-
-  // 시작 버튼
-  const c = getLevelConfig(selectedLevel);
-  const btn = document.getElementById('btn-start');
-  btn.textContent = hearts > 0 ? `${c.emoji} 단계 ${selectedLevel} 시작 ❤️×${hearts}` : '하트 부족';
-  btn.style.opacity = hearts > 0 ? '1' : '.5';
-  btn.style.background = hearts > 0
-    ? `linear-gradient(135deg, ${lightenColor(c.color)}, ${c.color})`
-    : '';
 }
 
-function selectLevel(lv) {
-  selectedLevel = lv;
-  localStorage.setItem('nh_selected_lv', lv);
-  applyTheme(getLevelConfig(lv).theme);
-  renderLobby();
-  // 선택한 카드로 스크롤
-  const cards = document.querySelectorAll('#level-select-list > div');
-  if (cards[lv - 1]) cards[lv - 1].scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
+// ── 터치 스와이프 ──
+function initSwipe() {
+  const slider = document.getElementById('card-slider');
+  let startX = 0, isDragging = false;
 
-function lightenColor(hex) {
-  // 간단한 색상 밝히기
-  return hex;
+  slider.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    isDragging = true;
+  }, { passive: true });
+
+  slider.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) {
+      goToSlide(sliderIdx + (dx < 0 ? 1 : -1));
+    }
+  }, { passive: true });
+
+  // 마우스 드래그 (데스크톱 테스트용)
+  slider.addEventListener('mousedown', e => { startX = e.clientX; isDragging = true; });
+  slider.addEventListener('mouseup', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 40) goToSlide(sliderIdx + (dx < 0 ? 1 : -1));
+  });
 }
 
 function renderHearts(id) {
   const wrap = document.getElementById(id);
+  if (!wrap) return;
   wrap.innerHTML = '';
-  for(let i=0;i<5;i++){const el=document.createElement('div');el.className='heart'+(i<hearts?' ':' empty');el.textContent='❤️';wrap.appendChild(el);}
+  for (let i = 0; i < 5; i++) {
+    const el = document.createElement('div');
+    el.className = 'heart' + (i < hearts ? '' : ' empty');
+    el.textContent = '❤️';
+    wrap.appendChild(el);
+  }
 }
 
 // ════════════════════════════════════════
-//  카운트다운
+//  카운트다운 — 게임스러운 버전
 // ════════════════════════════════════════
 function startCountdown() {
-  if(hearts<=0){postToRN({type:'REQUEST_HEART'});return;}
-  hearts=Math.max(0,hearts-1);
-  localStorage.setItem('nh_hearts',hearts);
-  postToRN({type:'HEART_USED',hearts});
+  // 테스트 모드: 하트 무한
+  hearts = 5;
+  localStorage.setItem('nh_hearts', hearts);
 
   cfg = getLevelConfig(selectedLevel);
   applyTheme(cfg.theme);
   showScreen('screen-countdown');
-  let count=3;
-  const el=document.getElementById('count-display');
-  const lb=document.getElementById('count-lbl');
-  function tick(){
-    if(count>0){el.className='count-num';el.textContent=count;el.style.animation='none';el.offsetHeight;el.style.animation='';lb.textContent=count===3?'READY':count===2?'SET':'GO?';SFX.tick();count--;setTimeout(tick,750);}
-    else{el.className='count-go';el.textContent='GO!';el.style.animation='none';el.offsetHeight;el.style.animation='';lb.textContent='';setTimeout(startGame,550);}
+
+  // 레벨 정보 표시
+  document.getElementById('cd-lv-badge').textContent = `단계 ${selectedLevel} ${cfg.emoji}`;
+  document.getElementById('cd-lv-name').textContent  = `${cfg.name} · ${cfg.count}개`;
+
+  // 미니 그리드 프리뷰
+  const preview = document.getElementById('cd-grid-preview');
+  preview.style.gridTemplateColumns = `repeat(${Math.min(cfg.cols, 6)}, 24px)`;
+  preview.innerHTML = '';
+  const previewCount = Math.min(cfg.count, cfg.cols * 2);
+  for (let i = 0; i < previewCount; i++) {
+    const c = document.createElement('div');
+    c.className = 'cd-cell';
+    preview.appendChild(c);
+    // 순차적으로 켜지는 애니메이션
+    setTimeout(() => c.classList.add('lit'), i * 40);
+  }
+
+  // 원형 타이머 애니메이션
+  const ring = document.getElementById('cd-ring');
+  const circumference = 283;
+
+  let count = 3;
+  const el  = document.getElementById('count-display');
+  const hints = ['순서대로 탭하세요!', '빠를수록 좋아요!', '집중하세요!'];
+
+  function updateRing(val) {
+    const offset = circumference - (val / 3) * circumference;
+    ring.style.strokeDashoffset = offset;
+    // 3초→빨강, 2초→노랑, 1초→초록
+    ring.style.stroke = val === 3 ? 'var(--accent)' : val === 2 ? 'var(--gold)' : 'var(--green)';
+  }
+
+  function tick() {
+    if (count > 0) {
+      el.className = 'cd-num';
+      el.textContent = count;
+      el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+      document.getElementById('cd-hint-text').textContent = hints[3 - count] || '집중!';
+      updateRing(count);
+      SFX.tick();
+      count--;
+      setTimeout(tick, 900);
+    } else {
+      el.className = 'cd-go';
+      el.textContent = 'GO!';
+      el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+      ring.style.strokeDashoffset = '0';
+      ring.style.stroke = 'var(--green)';
+      SFX.correct();
+      setTimeout(startGame, 500);
+    }
   }
   tick();
 }
@@ -1078,6 +1374,8 @@ window.addEventListener('message',e=>{
 //  초기화
 // ════════════════════════════════════════
 renderLobby();
+// DOM 렌더 완료 후 슬라이드 위치 초기화
+setTimeout(() => goToSlide(selectedLevel - 1, false), 50);
 </script>
 </body>
 </html>
